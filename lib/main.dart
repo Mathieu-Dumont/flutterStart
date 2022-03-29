@@ -1,8 +1,13 @@
+import 'package:firstapp/providers/TodoListModel.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(create: (context)=> TodoListModel(),
+      child: const MyApp(),
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -49,23 +54,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-  List<String> todoItems = ['Item 1', 'Item 2', 'Item 3'];  //List.empty(growable: true);
   String codeDialog = '';
   String valueText = '';
 
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-      _displayTextInputDialog();
-    });
-  }
 
 
   Future<void> _displayTextInputDialog([int index=-1]) async {
@@ -74,15 +65,17 @@ class _MyHomePageState extends State<MyHomePage> {
         builder: (context) {
           return AlertDialog(
             title: Text('TextField in Dialog'),
-            content: TextFormField(
-              initialValue: (index==-1)?'':todoItems[index],
-              onChanged: (value) {
-                setState(() {
-                  valueText = value;
-                });
-              },
-              decoration: InputDecoration(hintText: "Text Field in Dialog"),
-            ),
+            content: Consumer<TodoListModel>(builder: (context, todoList, child){
+              return TextFormField(
+                initialValue: (index==-1)?'':todoList.todo[index],
+                onChanged: (value) {
+                  setState(() {
+                    valueText = value;
+                  });
+                },
+                decoration: InputDecoration(hintText: "Text Field in Dialog"),
+              );
+            }),
             actions: <Widget>[
               FlatButton(
                 color: Colors.red,
@@ -94,21 +87,24 @@ class _MyHomePageState extends State<MyHomePage> {
                   });
                 },
               ),
-              FlatButton(
-                color: Colors.green,
-                textColor: Colors.white,
-                child: Text('OK'),
-                onPressed: () {
-                  setState(() {
-                    codeDialog = valueText;
-                    if(codeDialog.isNotEmpty){
-                      todoItems.add(codeDialog);
-                    }
-                    Navigator.pop(context);
-                  });
-                },
-              ),
+              Consumer<TodoListModel>(builder: (context, todoList, child){
+                return FlatButton(
+                  color: Colors.green,
+                  textColor: Colors.white,
+                  child: Text('OK'),
+                  onPressed: () {
+                    setState(() {
+                      codeDialog = valueText;
+                      if(codeDialog.isNotEmpty){
+                        todoList.addItem(codeDialog);
+                      }
+                      Navigator.pop(context);
+                    });
+                  },
+                );
+              }
 
+            ),
             ],
 
           );
@@ -134,39 +130,40 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body:
 
-              ListView.builder(
+              Consumer<TodoListModel>(builder:(context, todolist, child){
+                List<String> todos=todolist.todo;
+                return ListView.builder(
 
-                padding: const EdgeInsets.all(8),
-                  itemCount: todoItems.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    // access element from list using index
-                    // you can create and return a widget of your choice
-                    return ListTile(
-                      leading: Icon(Icons.agriculture),
-                      title: Text('${todoItems[index]}'),
-                      dense: false,
-                      trailing:Row( mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          IconButton(
-                              icon: Icon(Icons.create),
-                              onPressed:(){
-                                _displayTextInputDialog(index);
-                              },
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed:(){
-                              setState(() {
-                                todoItems.removeAt(index);
-                              });
+                    padding: const EdgeInsets.all(8),
+                    itemCount: todos.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      // access element from list using index
+                      // you can create and return a widget of your choice
+                      return ListTile(
+                          leading: Icon(Icons.agriculture),
+                          title: Text('${todos[index]}'),
+                          dense: false,
+                          trailing:Row( mainAxisSize: MainAxisSize.min,
+                            children: <Widget>[
+                              IconButton(
+                                icon: Icon(Icons.create),
+                                onPressed:(){
+                                  _displayTextInputDialog(index);
+                                },
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete),
+                                onPressed:(){
+                                  todolist.remove(index);
 
-                            },
-                          ),
-                        ],
-                      )
-                    );
-                  }
-              ),
+                                },
+                              ),
+                            ],
+                          )
+                      );
+                    }
+                );
+              }),
 
         floatingActionButton: Stack(children: <Widget>[
           Align(
@@ -174,7 +171,7 @@ class _MyHomePageState extends State<MyHomePage> {
             child: Padding(
               padding: EdgeInsets.all(25),
               child: FloatingActionButton(
-                onPressed: _incrementCounter,
+                onPressed: _displayTextInputDialog,
                 tooltip: 'Increment',
                 child: const Icon(Icons.add),
               ),
@@ -182,13 +179,15 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Align(
               alignment: Alignment.bottomRight,
-              child: FloatingActionButton(
-                  child: const Icon(Icons.clear),
+              child: Consumer<TodoListModel>(builder:(context, todoList, child){
+                return FloatingActionButton(
+                child: const Icon(Icons.clear),
                   onPressed: () {
                     setState(() {
-                      todoItems.clear();
+                      todoList.clear();
                     });
-                  })),
+                  });
+              })),
         ]));
   }
 }
