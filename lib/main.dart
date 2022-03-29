@@ -1,13 +1,14 @@
+import 'package:firstapp/models/Todo.dart';
 import 'package:firstapp/providers/TodoListModel.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(ChangeNotifierProvider(create: (context)=> TodoListModel(),
-      child: const MyApp(),
-    )
-  );
+  runApp(ChangeNotifierProvider(
+    create: (context) => TodoListModel(),
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -57,24 +58,31 @@ class _MyHomePageState extends State<MyHomePage> {
   String codeDialog = '';
   String valueText = '';
 
-
-
-  Future<void> _displayTextInputDialog([int index=-1]) async {
+  Future<void> _displayTextInputDialog([int index = -1]) async {
     return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
             title: Text('TextField in Dialog'),
-            content: Consumer<TodoListModel>(builder: (context, todoList, child){
-              return TextFormField(
-                initialValue: (index==-1)?'':todoList.todo[index],
-                onChanged: (value) {
-                  setState(() {
+            content:
+                Consumer<TodoListModel>(builder: (context, todoList, child) {
+              return Row(mainAxisSize: MainAxisSize.min, children: [
+                Checkbox(
+                    value: todoList.getItem(index).checked,
+                    onChanged: (value) {
+                      todoList.toggleCheck(index);
+                    }),
+                Flexible(
+                    child: TextFormField(
+                  autofocus: true,
+                  initialValue:
+                      (index == -1) ? '' : todoList.getItem(index).name,
+                  onChanged: (value) {
                     valueText = value;
-                  });
-                },
-                decoration: InputDecoration(hintText: "Text Field in Dialog"),
-              );
+                  },
+                  decoration: InputDecoration(hintText: "Text Field in Dialog"),
+                ))
+              ]);
             }),
             actions: <Widget>[
               FlatButton(
@@ -87,31 +95,24 @@ class _MyHomePageState extends State<MyHomePage> {
                   });
                 },
               ),
-              Consumer<TodoListModel>(builder: (context, todoList, child){
+              Consumer<TodoListModel>(builder: (context, todoList, child) {
                 return FlatButton(
                   color: Colors.green,
                   textColor: Colors.white,
                   child: Text('OK'),
                   onPressed: () {
-                    setState(() {
-                      codeDialog = valueText;
-                      if(codeDialog.isNotEmpty){
-                        todoList.addItem(codeDialog);
-                      }
-                      Navigator.pop(context);
-                    });
+                    codeDialog = valueText;
+                    if (codeDialog.isNotEmpty) {
+                      todoList.insertOrUpdate(index, codeDialog);
+                    }
+                    Navigator.pop(context);
                   },
                 );
-              }
-
-            ),
+              }),
             ],
-
           );
         });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -128,43 +129,44 @@ class _MyHomePageState extends State<MyHomePage> {
           // the App.build method, and use it to set our appbar title.
           title: Text(widget.title),
         ),
-        body:
-
-              Consumer<TodoListModel>(builder:(context, todolist, child){
-                List<String> todos=todolist.todo;
-                return ListView.builder(
-
-                    padding: const EdgeInsets.all(8),
-                    itemCount: todos.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      // access element from list using index
-                      // you can create and return a widget of your choice
-                      return ListTile(
-                          leading: Icon(Icons.agriculture),
-                          title: Text('${todos[index]}'),
-                          dense: false,
-                          trailing:Row( mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              IconButton(
-                                icon: Icon(Icons.create),
-                                onPressed:(){
-                                  _displayTextInputDialog(index);
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.delete),
-                                onPressed:(){
-                                  todolist.remove(index);
-
-                                },
-                              ),
-                            ],
-                          )
-                      );
-                    }
-                );
-              }),
-
+        body: Consumer<TodoListModel>(builder: (context, todolist, child) {
+          List<Todo> todos = todolist.todo;
+          return ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: todos.length,
+              itemBuilder: (BuildContext context, int index) {
+                // access element from list using index
+                // you can create and return a widget of your choice
+                return ListTile(
+                    leading: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.sports_motorsports),
+                      Checkbox(
+                          value: todos[index].checked,
+                          onChanged: (value) {
+                            todolist.toggleCheck(index);
+                          }),
+                    ]),
+                    title: Text('${todos[index].name}'),
+                    dense: false,
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        IconButton(
+                          icon: Icon(Icons.create),
+                          onPressed: () {
+                            _displayTextInputDialog(index);
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete),
+                          onPressed: () {
+                            todolist.remove(index);
+                          },
+                        ),
+                      ],
+                    ));
+              });
+        }),
         floatingActionButton: Stack(children: <Widget>[
           Align(
             alignment: Alignment.bottomLeft,
@@ -179,14 +181,15 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Align(
               alignment: Alignment.bottomRight,
-              child: Consumer<TodoListModel>(builder:(context, todoList, child){
+              child:
+                  Consumer<TodoListModel>(builder: (context, todoList, child) {
                 return FloatingActionButton(
-                child: const Icon(Icons.clear),
-                  onPressed: () {
-                    setState(() {
-                      todoList.clear();
+                    child: const Icon(Icons.clear),
+                    onPressed: () {
+                      setState(() {
+                        todoList.clear();
+                      });
                     });
-                  });
               })),
         ]));
   }
