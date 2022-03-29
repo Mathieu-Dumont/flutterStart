@@ -58,12 +58,42 @@ class _MyHomePageState extends State<MyHomePage> {
   String codeDialog = '';
   String valueText = '';
 
+  Future<void> _confirmationClearList(context) async {
+    return showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+              title: const Text('Voulez vous vraiment suprimer la liste ?'),
+              actions: <Widget>[
+                FlatButton(
+                  color: Colors.red,
+                  textColor: Colors.white,
+                  child: const Text('CANCEL'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                Consumer<TodoListModel>(builder: (context, todoList, child) {
+                  return FlatButton(
+                    color: Colors.green,
+                    textColor: Colors.white,
+                    child: const Text('YES'),
+                    onPressed: () {
+                      todoList.clear();
+                      Navigator.pop(context);
+                    },
+                  );
+                })
+              ]);
+        });
+  }
+
   Future<void> _displayTextInputDialog([int index = -1]) async {
     return showDialog(
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: Text('TextField in Dialog'),
+            title: const Text('TextField in Dialog'),
             content:
                 Consumer<TodoListModel>(builder: (context, todoList, child) {
               return Row(mainAxisSize: MainAxisSize.min, children: [
@@ -80,7 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   onChanged: (value) {
                     valueText = value;
                   },
-                  decoration: InputDecoration(hintText: "Text Field in Dialog"),
+                  decoration:
+                      const InputDecoration(hintText: "Text Field in Dialog"),
                 ))
               ]);
             }),
@@ -88,18 +119,16 @@ class _MyHomePageState extends State<MyHomePage> {
               FlatButton(
                 color: Colors.red,
                 textColor: Colors.white,
-                child: Text('CANCEL'),
+                child: const Text('CANCEL'),
                 onPressed: () {
-                  setState(() {
-                    Navigator.pop(context);
-                  });
+                  Navigator.pop(context);
                 },
               ),
               Consumer<TodoListModel>(builder: (context, todoList, child) {
                 return FlatButton(
                   color: Colors.green,
                   textColor: Colors.white,
-                  child: Text('OK'),
+                  child: const Text('OK'),
                   onPressed: () {
                     codeDialog = valueText;
                     if (codeDialog.isNotEmpty) {
@@ -139,26 +168,26 @@ class _MyHomePageState extends State<MyHomePage> {
                 // you can create and return a widget of your choice
                 return ListTile(
                     leading: Row(mainAxisSize: MainAxisSize.min, children: [
-                      Icon(Icons.sports_motorsports),
+                      const Icon(Icons.sports_motorsports),
                       Checkbox(
                           value: todos[index].checked,
                           onChanged: (value) {
                             todolist.toggleCheck(index);
                           }),
                     ]),
-                    title: Text('${todos[index].name}'),
+                    title: Text(todos[index].name),
                     dense: false,
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         IconButton(
-                          icon: Icon(Icons.create),
+                          icon: const Icon(Icons.create),
                           onPressed: () {
                             _displayTextInputDialog(index);
                           },
                         ),
                         IconButton(
-                          icon: Icon(Icons.delete),
+                          icon: const Icon(Icons.delete),
                           onPressed: () {
                             todolist.remove(index);
                           },
@@ -171,7 +200,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Align(
             alignment: Alignment.bottomLeft,
             child: Padding(
-              padding: EdgeInsets.all(25),
+              padding: const EdgeInsets.all(25),
               child: FloatingActionButton(
                 onPressed: _displayTextInputDialog,
                 tooltip: 'Increment',
@@ -186,9 +215,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 return FloatingActionButton(
                     child: const Icon(Icons.clear),
                     onPressed: () {
-                      setState(() {
-                        todoList.clear();
-                      });
+                      _confirmationClearList(context);
                     });
               })),
         ]));
