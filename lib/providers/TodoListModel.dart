@@ -7,6 +7,15 @@ class TodoListModel extends ChangeNotifier {
     'mes courses': [Todo(name: 'Eau'), Todo(name: 'Pain')]
   };
 
+  int? countElement(String name) {
+    return myLists[name]?.length;
+  }
+
+  removeList(index) {
+    myLists.remove(index);
+    notifyListeners();
+  }
+
   get listNames {
     return myLists.keys.toList();
   }

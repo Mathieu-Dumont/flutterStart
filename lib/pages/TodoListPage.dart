@@ -102,6 +102,7 @@ class _TodoListPageState extends State<TodoListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final listName = ModalRoute.of(context)!.settings.arguments as String;
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -116,6 +117,7 @@ class _TodoListPageState extends State<TodoListPage> {
           title: Text(widget.title),
         ),
         body: Consumer<TodoListModel>(builder: (context, todolist, child) {
+          todolist.setActiveList(listName);
           List<Todo> todos = todolist.todo;
           return ListView.builder(
               padding: const EdgeInsets.all(8),
