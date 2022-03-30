@@ -3,6 +3,33 @@ import 'package:flutter/widgets.dart';
 
 class TodoListModel extends ChangeNotifier {
   List<Todo> _todos = List.empty(growable: true);
+  Map<String, List<Todo>> myLists = {
+    'mes courses': [Todo(name: 'Eau'), Todo(name: 'Pain')]
+  };
+
+  get listNames {
+    return myLists.keys.toList();
+  }
+
+  bool addNewList(String name) {
+    if (!myLists.containsKey(name)) {
+      myLists[name] = List.empty(growable: true);
+      notifyListeners();
+      return true;
+    }
+    return false;
+  }
+
+  get countList {
+    return myLists.length;
+  }
+
+  setActiveList(String name) {
+    if (myLists.containsKey(name)) {
+      _todos = myLists[name] as List<Todo>;
+      notifyListeners();
+    }
+  }
 
   get todo {
     return _todos;
