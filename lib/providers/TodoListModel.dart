@@ -1,11 +1,27 @@
+import 'package:firstapp/database/TodoElement.dart';
+import 'package:firstapp/database/TodoList.dart';
+import 'package:firstapp/main.dart';
 import 'package:firstapp/models/Todo.dart';
 import 'package:flutter/widgets.dart';
+import 'package:hive/hive.dart';
 
 class TodoListModel extends ChangeNotifier {
+  TodoListModel() {
+    Box box = Hive.box<TodoList>(MyApp.BOXNAME);
+
+    TodoList aList = TodoList()
+      ..name = 'Courses'
+      ..elements = [TodoElement('eau'), TodoElement('Coca')];
+    box.add(aList);
+
+    List<TodoList> list = box.values.toList().cast();
+    list.forEach((list) {
+      myLists[list.name] = list.elements;
+    });
+  }
+
+  Map<String, List<TodoElement>> myLists = {};
   List<Todo> _todos = List.empty(growable: true);
-  Map<String, List<Todo>> myLists = {
-    'mes courses': [Todo(name: 'Eau'), Todo(name: 'Pain')]
-  };
 
   int? countElement(String name) {
     return myLists[name]?.length;
