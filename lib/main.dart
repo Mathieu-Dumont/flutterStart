@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:firstapp/database/TodoElement.dart';
 import 'package:firstapp/database/TodoList.dart';
-import 'package:firstapp/models/Todo.dart';
 import 'package:firstapp/pages/HomePage.dart';
 import 'package:firstapp/pages/TodoListPage.dart';
 import 'package:firstapp/providers/TodoListModel.dart';

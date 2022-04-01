@@ -1,27 +1,23 @@
 import 'package:firstapp/database/TodoElement.dart';
 import 'package:firstapp/database/TodoList.dart';
 import 'package:firstapp/main.dart';
-import 'package:firstapp/models/Todo.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
 
 class TodoListModel extends ChangeNotifier {
+  late String activeListName;
+
   TodoListModel() {
     Box box = Hive.box<TodoList>(MyApp.BOXNAME);
 
-    TodoList aList = TodoList()
-      ..name = 'Courses'
-      ..elements = [TodoElement('eau'), TodoElement('Coca')];
-    box.add(aList);
-
     List<TodoList> list = box.values.toList().cast();
     list.forEach((list) {
-      myLists[list.name] = list.elements;
+      myLists[list.name] = list.elements.cast<TodoElement>();
     });
   }
 
   Map<String, List<TodoElement>> myLists = {};
-  List<Todo> _todos = List.empty(growable: true);
+  List<TodoElement> _todos = List.empty(growable: true);
 
   int? countElement(String name) {
     return myLists[name]?.length;
@@ -51,7 +47,8 @@ class TodoListModel extends ChangeNotifier {
 
   setActiveList(String name) {
     if (myLists.containsKey(name)) {
-      _todos = myLists[name] as List<Todo>;
+      activeListName = name;
+      _todos = myLists[name] as List<TodoElement>;
       notifyListeners();
     }
   }
@@ -61,13 +58,13 @@ class TodoListModel extends ChangeNotifier {
   }
 
   addItem(String item) {
-    _todos.add(Todo(name: item, checked: false));
+    _todos.add(TodoElement(item));
     notifyListeners();
   }
 
-  Todo getItem(int index) {
+  TodoElement getItem(int index) {
     if (index == -1) {
-      return Todo(name: '');
+      return TodoElement('');
     }
     return _todos.elementAt(index);
   }
@@ -81,6 +78,7 @@ class TodoListModel extends ChangeNotifier {
 
   update(int index, String newValue) {
     _todos[index].name = newValue;
+    save();
     notifyListeners();
   }
 
@@ -100,5 +98,14 @@ class TodoListModel extends ChangeNotifier {
   clear() {
     _todos.clear();
     notifyListeners();
+  }
+
+  save() async {
+    //Sauvegarder activeListName et ses items (myList)
+    Box box = Hive.box<TodoList>(MyApp.BOXNAME);
+    TodoList list =
+        await box.values.firstWhere((element) => element.name == activeListName)
+          ?..elements = _todos
+          ..save();
   }
 }

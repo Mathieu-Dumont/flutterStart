@@ -1,4 +1,3 @@
-import 'package:firstapp/models/Todo.dart';
 import 'package:firstapp/pages/TodoListPage.dart';
 import 'package:firstapp/providers/TodoListModel.dart';
 import 'package:flutter/material.dart';
